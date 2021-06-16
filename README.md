@@ -7,7 +7,7 @@ Main features
 -------------
 - Synchronize router state with redux store through uni-directional flow (i.e. history -> store -> router -> components).
 
-- Supports [React Router v6](https://github.com/ReactTraining/react-router/tree/dev).
+- Supports [React Router v6](https://github.com/ReactTraining/react-router/tree/dev) and [History v5](https://github.com/ReactTraining/history)
 
 - Supports functional component hot reloading while preserving state.
 
