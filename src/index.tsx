@@ -86,13 +86,13 @@ export function createRouterMiddleware(history: History): Middleware {
 
 // Reducer
 
-export type ConnectedRouterReducerState = {
+export type ReduxRouterState = {
   location: Location
   action: Action
 }
 
-export function createConnectedRouterReducer(history: History): Reducer<ConnectedRouterReducerState, RouterActions> {
-  const initialRouterState: ConnectedRouterReducerState = {
+export function createRouterReducer(history: History): Reducer<ReduxRouterState, RouterActions> {
+  const initialRouterState: ReduxRouterState = {
     location: history.location,
     action: history.action,
   }
@@ -110,9 +110,9 @@ export function createConnectedRouterReducer(history: History): Reducer<Connecte
   }
 }
 
-export type ConnectedRouterSelector = (store: Store) => ConnectedRouterReducerState
+export type ReduxRouterSelector = (store: Store) => ReduxRouterState
 
-export function connectedRouterSelector(state: any): ConnectedRouterReducerState {
+export function reduxRouterSelector(state: any): ReduxRouterState {
   return state.router
 }
 
@@ -124,7 +124,7 @@ type Props = {
   history: History
   children: React.ReactNode
   enableTimeTravelling: boolean
-  routerSelector: ConnectedRouterSelector
+  routerSelector: ReduxRouterSelector
 }
 
 type State = {
@@ -138,7 +138,7 @@ export class ReduxRouter extends React.Component<Props, State> {
 
   static defaultProps = {
     enableTimeTravelling: process.env.NODE_ENV === 'development',
-    routerSelector: connectedRouterSelector,
+    routerSelector: reduxRouterSelector,
   }
 
   constructor(props: Props) {
