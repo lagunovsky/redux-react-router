@@ -1,5 +1,5 @@
 {
-  "name": "redux-react-router",
+  "name": "@lagunovsky/redux-react-router",
   "version": "1.0.0",
   "description": "A Redux binding for React Router v6",
   "author": "Ivan Lagunovsky",
@@ -42,5 +42,13 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "typescript": "^4.3.2"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lagunovsky/redux-react-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lagunovsky/redux-react-router/issues"
+  },
+  "homepage": "https://github.com/lagunovsky/redux-react-router#readme"
 }
