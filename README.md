@@ -1,10 +1,12 @@
 Redux React Router
 ======================
-A Redux binding for React Router v6
+
+A Redux binding for React Router v6, based on [Connected React Router](https://github.com/supasate/connected-react-router)
 
 
 Main features
--------------
+-----
+
 - Synchronize router state with redux store through uni-directional flow (i.e. history -> store -> router -> components).
 
 - Supports [React Router v6](https://github.com/ReactTraining/react-router/tree/dev) and [History v5](https://github.com/ReactTraining/history)
@@ -22,7 +24,8 @@ and [redux-saga](https://github.com/yelouafi/redux-saga).
 
 
 Installation
------------
+-----
+
 Redux React Router requires **React 16.8, React Redux 6.0, React Router 6.0 or later**.
 
     $ npm install --save @lagunovsky/redux-react-router
@@ -30,6 +33,7 @@ Redux React Router requires **React 16.8, React Redux 6.0, React Router 6.0 or l
 Or
 
     $ yarn add @lagunovsky/redux-react-router
+
 
 Usage
 -----
