@@ -135,6 +135,7 @@ type State = {
 export class ReduxRouter extends React.Component<Props, State> {
   removeHistoryListener: Function
   removeStoreSubscription?: Function
+  timeTravelling: boolean = false
 
   static defaultProps = {
     enableTimeTravelling: process.env.NODE_ENV === 'development',
@@ -167,6 +168,7 @@ export class ReduxRouter extends React.Component<Props, State> {
             historyLocation.state !== locationInStore.state
           )
         ) {
+          this.timeTravelling = true
           props.history.push(locationInStore)
         }
       })
@@ -174,7 +176,11 @@ export class ReduxRouter extends React.Component<Props, State> {
 
     // Listen to history changes
     this.removeHistoryListener = props.history.listen(({ location, action }) => {
-      this.props.store.dispatch(onLocationChanged(location, action))
+      if (this.timeTravelling === false) {
+        this.props.store.dispatch(onLocationChanged(location, action))
+      } else {
+        this.timeTravelling = false
+      }
       this.setState({ action, location })
     })
   }

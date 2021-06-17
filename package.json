@@ -1,6 +1,6 @@
 {
   "name": "@lagunovsky/redux-react-router",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "A Redux binding for React Router v6",
   "author": "Ivan Lagunovsky",
   "license": "MIT",
@@ -22,7 +22,8 @@
   ],
   "scripts": {
     "build": "rollup -c",
-    "prepare": "install-peers"
+    "prepare": "install-peers",
+    "prepublishOnly": "yarn run build"
   },
   "peerDependencies": {
     "history": "^5.0.0",
@@ -37,10 +38,10 @@
     "@types/react": "^17.0.11",
     "@types/react-redux": "^7.1.16",
     "install-peers-cli": "^2.2.0",
-    "rollup": "^2.51.2",
+    "rollup": "^2.52.1",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-typescript2": "^0.30.0",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.3"
   },
   "dependencies": {},
   "repository": {
