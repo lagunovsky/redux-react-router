@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "ES2015",
     "module": "esnext",
     "strict": true,
     "esModuleInterop": true,
