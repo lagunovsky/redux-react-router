@@ -1,31 +1,39 @@
 name: Publish
 
 on:
-  push:
-    branches: [ main ]
+  create:
+    tags:
+      - v*
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [ 14.x ]
-
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+      - name: Setup NPM registry
+        uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: Build
+      - name: Publish to NPM
         run: |
           yarn install
-          yarn run build
+          yarn build
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - uses: JS-DevTools/npm-publish@v1
+      - name: Setup GPR registry
+        uses: actions/setup-node@v2
         with:
-          token: ${{ secrets.NPM_TOKEN }}
-          access: public
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Publish to GPR
+        run: |
+          yarn install
+          yarn build
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPR_TOKEN }}
