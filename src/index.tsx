@@ -122,6 +122,7 @@ export function reduxRouterSelector(state: any): ReduxRouterState {
 type Props = {
   store: Store
   history: History
+  basename?: string
   children: React.ReactNode
   enableTimeTravelling: boolean
   routerSelector: ReduxRouterSelector
@@ -199,8 +200,9 @@ export class ReduxRouter extends React.Component<Props, State> {
   render() {
     return (
       <Router
-        action={this.state.action}
+        navigationType={this.state.action}
         location={this.state.location}
+        basename={this.props.basename}
         navigator={this.props.history}
         children={this.props.children}
       />
