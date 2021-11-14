@@ -134,7 +134,7 @@ type State = {
 }
 
 export class ReduxRouter extends React.Component<Props, State> {
-  removeHistoryListener: Function
+  removeHistoryListener?: Function
   removeStoreSubscription?: Function
   timeTravelling: boolean = false
 
@@ -174,9 +174,15 @@ export class ReduxRouter extends React.Component<Props, State> {
         }
       })
     }
+  }
 
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
+    return this.state.location.key !== nextState.location.key
+  }
+
+  componentDidMount() {
     // Listen to history changes
-    this.removeHistoryListener = props.history.listen(({ location, action }) => {
+    this.removeHistoryListener = this.props.history.listen(({ location, action }) => {
       if (this.timeTravelling === false) {
         this.props.store.dispatch(onLocationChanged(location, action))
       } else {
@@ -186,12 +192,10 @@ export class ReduxRouter extends React.Component<Props, State> {
     })
   }
 
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
-    return this.state.location.key !== nextState.location.key
-  }
-
   componentWillUnmount() {
-    this.removeHistoryListener()
+    if (this.removeHistoryListener !== undefined) {
+      this.removeHistoryListener()
+    }
     if (this.removeStoreSubscription !== undefined) {
       this.removeStoreSubscription()
     }
