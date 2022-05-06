@@ -1,3 +1,7 @@
+![License](https://img.shields.io/github/license/lagunovsky/redux-react-router)
+![TypeScript](https://img.shields.io/badge/typescript-%3E%3D4.0.0-blue)
+![Tests workflow](https://github.com/lagunovsky/redux-react-router/actions/workflows/publish.yml/badge.svg)
+
 Redux React Router
 ======================
 
