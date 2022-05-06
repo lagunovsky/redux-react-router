@@ -1,5 +1,5 @@
 import { Action, History, Location } from 'history'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Router } from 'react-router'
 import { Middleware, Reducer, Store } from 'redux'
 
@@ -55,10 +55,56 @@ function updateLocation<M extends Methods = Methods>(method: M) {
  * The associated routerMiddleware will capture these events before they get to
  * your reducer and reissue them as the matching function on your history.
  */
+
+/**
+ * Pushes a new location onto the history stack, increasing its length by one.
+ * If there were any entries in the stack after the current one, they are
+ * lost.
+ *
+ * @param to - The new URL
+ * @param state - Data to associate with the new location
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.push
+ */
 export const push = updateLocation('push')
+
+/**
+ * Replaces the current location in the history stack with a new one.  The
+ * location that was replaced will no longer be available.
+ *
+ * @param to - The new URL
+ * @param state - Data to associate with the new location
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.replace
+ */
 export const replace = updateLocation('replace')
+
+/**
+ * Navigates `n` entries backward/forward in the history stack relative to the
+ * current index. For example, a "back" navigation would use go(-1).
+ *
+ * @param delta - The delta in the stack index
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.go
+ */
 export const go = updateLocation('go')
+
+/**
+ * Navigates to the next entry in the stack. Identical to go(1).
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.forward
+ */
 export const back = updateLocation('back')
+
+/**
+ * Sets up a listener that will be called whenever the current location
+ * changes.
+ *
+ * @param listener - A function that will be called when the location changes
+ * @returns unlisten - A function that may be used to stop listening
+ *
+ * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.listen
+ */
 export const forward = updateLocation('forward')
 
 export const routerActions = {
@@ -110,16 +156,18 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState,
   }
 }
 
-export type ReduxRouterSelector = (store: Store) => ReduxRouterState
+export type ReduxRouterSelector<T = any> = (state: T) => ReduxRouterState
 
-export function reduxRouterSelector(state: any): ReduxRouterState {
+export type ReduxRouterStoreState = { router: ReduxRouterState }
+
+export function reduxRouterSelector<T extends ReduxRouterStoreState = ReduxRouterStoreState>(state: T): ReduxRouterState {
   return state.router
 }
 
 
 // Component
 
-type Props = {
+export type ReduxRouterProps = {
   store: Store
   history: History
   basename?: string
@@ -128,88 +176,69 @@ type Props = {
   routerSelector: ReduxRouterSelector
 }
 
-type State = {
-  action: Action
-  location: Location
-}
+const development = process.env.NODE_ENV === 'development'
 
-export class ReduxRouter extends React.Component<Props, State> {
-  removeHistoryListener?: Function
-  removeStoreSubscription?: Function
-  timeTravelling: boolean = false
+export function ReduxRouter({ enableTimeTravelling = development, routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
+  const [ state, setState ] = useState<ReduxRouterState>({
+    action: props.history.action,
+    location: props.history.location,
+  })
 
-  static defaultProps = {
-    enableTimeTravelling: process.env.NODE_ENV === 'development',
-    routerSelector: reduxRouterSelector,
-  }
+  const timeTravellingRef = useRef(false)
 
-  constructor(props: Props) {
-    super(props)
+  useEffect(
+    () => {
+      let removeStoreSubscription: () => void | undefined
+      let removeHistoryListener: () => void
 
-    this.state = {
-      action: props.history.action,
-      location: props.history.location,
-    }
+      if (enableTimeTravelling === true) {
+        removeStoreSubscription = props.store.subscribe(() => {
+          // Extract store's location and browser location
+          const locationInStore = routerSelector(props.store.getState()).location
+          const historyLocation = props.history.location
 
-    if (this.props.enableTimeTravelling === true) {
-      // Subscribe to store changes to check if we are in time travelling
-      this.removeStoreSubscription = props.store.subscribe(() => {
-
-        // Extract store's location and browser location
-        const locationInStore = props.routerSelector(props.store.getState()).location
-        const historyLocation = props.history.location
-
-        // If we do time travelling, the location in store is changed but location in history is not changed
-        if (
-          props.history.action === 'PUSH' &&
-          (
-            historyLocation.pathname !== locationInStore.pathname ||
-            historyLocation.search !== locationInStore.search ||
-            historyLocation.hash !== locationInStore.hash ||
-            historyLocation.state !== locationInStore.state
-          )
-        ) {
-          this.timeTravelling = true
-          props.history.push(locationInStore)
-        }
-      })
-    }
-  }
-
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>): boolean {
-    return this.state.location.key !== nextState.location.key
-  }
-
-  componentDidMount() {
-    // Listen to history changes
-    this.removeHistoryListener = this.props.history.listen(({ location, action }) => {
-      if (this.timeTravelling === false) {
-        this.props.store.dispatch(onLocationChanged(location, action))
-      } else {
-        this.timeTravelling = false
+          // If we do time travelling, the location in store is changed but location in history is not changed
+          if (
+            props.history.action === 'PUSH' &&
+            (
+              historyLocation.pathname !== locationInStore.pathname ||
+              historyLocation.search !== locationInStore.search ||
+              historyLocation.hash !== locationInStore.hash ||
+              historyLocation.state !== locationInStore.state
+            )
+          ) {
+            timeTravellingRef.current = true
+            props.history.push(locationInStore)
+          }
+        })
       }
-      this.setState({ action, location })
-    })
-  }
 
-  componentWillUnmount() {
-    if (this.removeHistoryListener !== undefined) {
-      this.removeHistoryListener()
-    }
-    if (this.removeStoreSubscription !== undefined) {
-      this.removeStoreSubscription()
-    }
-  }
+      removeHistoryListener = props.history.listen(({ location, action }) => {
+        if (timeTravellingRef.current === false) {
+          props.store.dispatch(onLocationChanged(location, action))
+        } else {
+          timeTravellingRef.current = false
+        }
+        setState({ action, location })
+      })
 
-  render() {
-    return (
-      <Router
-        navigationType={this.state.action}
-        location={this.state.location}
-        basename={this.props.basename}
-        navigator={this.props.history}
-        children={this.props.children}
-      />
-    )
-  }
+      return function cleanup() {
+        removeHistoryListener()
+        if (removeStoreSubscription !== undefined) {
+          removeStoreSubscription()
+        }
+      }
+    },
+    development ? [ enableTimeTravelling, history, routerSelector ] : [],
+  )
+
+  return (
+    <Router
+      navigationType={state.action}
+      location={state.location}
+      basename={props.basename}
+      navigator={props.history}
+      children={props.children}
+    />
+  )
 }

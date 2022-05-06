@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "Node",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "declaration": true
   },
   "include": [
