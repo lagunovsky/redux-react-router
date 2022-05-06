@@ -17,7 +17,7 @@ Main features
 
 - Supports functional component hot reloading while preserving state.
 
-- Dispatching of history methods (`push`, `replace`, `go`, `goBack`, `goForward`) works for both [redux-thunk](https://github.com/gaearon/redux-thunk)
+- Dispatching of history methods (`push`, `replace`, `go`, `back`, `forward`) works for both [redux-thunk](https://github.com/gaearon/redux-thunk)
 and [redux-saga](https://github.com/yelouafi/redux-saga).
 
 - Nested children can access routing state such as the current location directly with `react-redux`'s `connect`.
