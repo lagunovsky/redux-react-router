@@ -172,8 +172,8 @@ export type ReduxRouterProps = {
   history: History
   basename?: string
   children: React.ReactNode
-  enableTimeTravelling: boolean
-  routerSelector: ReduxRouterSelector
+  enableTimeTravelling?: boolean
+  routerSelector?: ReduxRouterSelector
 }
 
 const development = process.env.NODE_ENV === 'development'
