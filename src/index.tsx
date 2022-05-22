@@ -1,5 +1,6 @@
 import { Action, History, Location } from 'history'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { ReactReduxContext } from 'react-redux'
 import { Router } from 'react-router'
 import { Middleware, Reducer, Store } from 'redux'
 
@@ -168,7 +169,7 @@ export function reduxRouterSelector<T extends ReduxRouterStoreState = ReduxRoute
 // Component
 
 export type ReduxRouterProps = {
-  store: Store
+  store?: Store
   history: History
   basename?: string
   children: React.ReactNode
@@ -186,15 +187,27 @@ export function ReduxRouter({ enableTimeTravelling = development, routerSelector
 
   const timeTravellingRef = useRef(false)
 
+  let store: Store
+  if (props.store !== undefined) {
+    store = props.store
+  } else {
+    try {
+      const reactReduxContextValue = useContext(ReactReduxContext)
+      store = reactReduxContextValue.store
+    } catch (e) {
+      console.error('Please pass the "store" property')
+    }
+  }
+
   useEffect(
     () => {
       let removeStoreSubscription: () => void | undefined
       let removeHistoryListener: () => void
 
       if (enableTimeTravelling === true) {
-        removeStoreSubscription = props.store.subscribe(() => {
+        removeStoreSubscription = store.subscribe(() => {
           // Extract store's location and browser location
-          const locationInStore = routerSelector(props.store.getState()).location
+          const locationInStore = routerSelector(store.getState()).location
           const historyLocation = props.history.location
 
           // If we do time travelling, the location in store is changed but location in history is not changed
@@ -215,7 +228,7 @@ export function ReduxRouter({ enableTimeTravelling = development, routerSelector
 
       removeHistoryListener = props.history.listen(({ location, action }) => {
         if (timeTravellingRef.current === false) {
-          props.store.dispatch(onLocationChanged(location, action))
+          store.dispatch(onLocationChanged(location, action))
         } else {
           timeTravellingRef.current = false
         }
