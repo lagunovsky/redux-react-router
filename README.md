@@ -5,7 +5,7 @@
 Redux React Router
 ======================
 
-A Redux binding for React Router v6, based on [Connected React Router](https://github.com/supasate/connected-react-router)
+A Redux binding for React Router
 
 - [Main features](#main-features)
 - [Installation](#installation)
