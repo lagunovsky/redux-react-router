@@ -1,8 +1,8 @@
 import { Action, History, Location } from 'history'
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { ReactReduxContext } from 'react-redux'
+import React, { useEffect, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Router } from 'react-router'
-import { Middleware, Reducer, Store } from 'redux'
+import { Middleware, Reducer } from 'redux'
 
 
 // Actions
@@ -169,81 +169,33 @@ export function reduxRouterSelector<T extends ReduxRouterStoreState = ReduxRoute
 // Component
 
 export type ReduxRouterProps = {
-  store?: Store
   history: History
   basename?: string
   children: React.ReactNode
-  enableTimeTravelling?: boolean
   routerSelector?: ReduxRouterSelector
 }
 
-const development = process.env.NODE_ENV === 'development'
+export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
+  const dispatch = useDispatch()
+  const skipHistoryChange = useRef(false)
+  const state = useSelector(routerSelector)
 
-export function ReduxRouter({ enableTimeTravelling = development, routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
-  const [ state, setState ] = useState<ReduxRouterState>({
-    action: props.history.action,
-    location: props.history.location,
-  })
+  useEffect(() => {
+    return props.history.listen((nextState) => {
+      if (skipHistoryChange.current === true) {
+        skipHistoryChange.current = false
+        return
+      }
+      dispatch(onLocationChanged(nextState.location, nextState.action))
+    })
+  }, [ props.history ])
 
-  const timeTravellingRef = useRef(false)
-
-  let store: Store
-  if (props.store !== undefined) {
-    store = props.store
-  } else {
-    try {
-      const reactReduxContextValue = useContext(ReactReduxContext)
-      store = reactReduxContextValue.store
-    } catch (e) {
-      console.error('Please pass the "store" property')
+  useEffect(() => {
+    if (props.history.location !== state.location) {
+      skipHistoryChange.current = true
+      props.history.replace(state.location)
     }
-  }
-
-  useEffect(
-    () => {
-      let removeStoreSubscription: () => void | undefined
-      let removeHistoryListener: () => void
-
-      if (enableTimeTravelling === true) {
-        removeStoreSubscription = store.subscribe(() => {
-          // Extract store's location and browser location
-          const locationInStore = routerSelector(store.getState()).location
-          const historyLocation = props.history.location
-
-          // If we do time travelling, the location in store is changed but location in history is not changed
-          if (
-            props.history.action === 'PUSH' &&
-            (
-              historyLocation.pathname !== locationInStore.pathname ||
-              historyLocation.search !== locationInStore.search ||
-              historyLocation.hash !== locationInStore.hash ||
-              historyLocation.state !== locationInStore.state
-            )
-          ) {
-            timeTravellingRef.current = true
-            props.history.push(locationInStore)
-          }
-        })
-      }
-
-      removeHistoryListener = props.history.listen(({ location, action }) => {
-        if (timeTravellingRef.current === false) {
-          store.dispatch(onLocationChanged(location, action))
-        } else {
-          timeTravellingRef.current = false
-        }
-        setState({ action, location })
-      })
-
-      return function cleanup() {
-        removeHistoryListener()
-        if (removeStoreSubscription !== undefined) {
-          removeStoreSubscription()
-        }
-      }
-    },
-    development ? [ enableTimeTravelling, history, routerSelector ] : [],
-  )
+  }, [ state ])
 
   return (
     <Router
