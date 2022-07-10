@@ -52,20 +52,12 @@ function updateLocation<M extends Methods = Methods>(method: M) {
 }
 
 /**
- * These actions correspond to the history API.
- * The associated routerMiddleware will capture these events before they get to
- * your reducer and reissue them as the matching function on your history.
- */
-
-/**
  * Pushes a new location onto the history stack, increasing its length by one.
  * If there were any entries in the stack after the current one, they are
  * lost.
  *
  * @param to - The new URL
  * @param state - Data to associate with the new location
- *
- * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.push
  */
 export const push = updateLocation('push')
 
@@ -75,36 +67,21 @@ export const push = updateLocation('push')
  *
  * @param to - The new URL
  * @param state - Data to associate with the new location
- *
- * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.replace
  */
 export const replace = updateLocation('replace')
 
 /**
- * Navigates `n` entries backward/forward in the history stack relative to the
- * current index. For example, a "back" navigation would use go(-1).
- *
- * @param delta - The delta in the stack index
- *
- * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.go
+ * Navigates to the next entry in the stack. Identical to go(1).
  */
 export const go = updateLocation('go')
 
 /**
- * Navigates to the next entry in the stack. Identical to go(1).
- *
- * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.forward
+ * Goes back one entry in the history stack. Identical to go(-1).
  */
 export const back = updateLocation('back')
 
 /**
- * Sets up a listener that will be called whenever the current location
- * changes.
- *
- * @param listener - A function that will be called when the location changes
- * @returns unlisten - A function that may be used to stop listening
- *
- * @see https://github.com/remix-run/history/tree/main/docs/api-reference.md#history.listen
+ * Navigates to the next entry in the stack. Identical to go(1).
  */
 export const forward = updateLocation('forward')
 
@@ -150,7 +127,7 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState,
   */
   return (state = initialRouterState, action: RouterActions) => {
     if (action.type === ROUTER_ON_LOCATION_CHANGED) {
-      return { ...state, ...action.payload }
+      return action.payload
     }
 
     return state
@@ -177,21 +154,27 @@ export type ReduxRouterProps = {
 
 export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
   const dispatch = useDispatch()
-  const skipHistoryChange = useRef(false)
+  const skipHistoryChange = useRef<boolean>()
   const state = useSelector(routerSelector)
 
   useEffect(() => {
-    return props.history.listen((nextState) => {
+    const listener = props.history.listen((nextState) => {
       if (skipHistoryChange.current === true) {
         skipHistoryChange.current = false
         return
       }
       dispatch(onLocationChanged(nextState.location, nextState.action))
     })
+    if (props.history.location !== state.location) {
+      dispatch(onLocationChanged(props.history.location, props.history.action))
+    }
+    return listener
   }, [ props.history ])
 
   useEffect(() => {
-    if (props.history.location !== state.location) {
+    if (skipHistoryChange.current === undefined) {
+      skipHistoryChange.current = false
+    } else if (props.history.location !== state.location) {
       skipHistoryChange.current = true
       props.history.replace(state.location)
     }
