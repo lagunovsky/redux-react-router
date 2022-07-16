@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Exit if not on main branch
-        if: endsWith(GitHub.ref, 'main') == false
+        if: ${{ github.ref != 'refs/heads/main' }}
         run: exit -1
 
       - name: Setup NPM registry
