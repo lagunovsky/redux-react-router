@@ -11,8 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Exit if not on master branch
-        if: endsWith(GitHub.ref, 'master') == false
+      - name: Exit if not on main branch
+        if: endsWith(GitHub.ref, 'main') == false
         run: exit -1
 
       - name: Setup NPM registry
