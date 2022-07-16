@@ -34,10 +34,10 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
-    "@types/node": "^18.0.3",
+    "@types/node": "^18.0.5",
     "@types/react": "^18.0.15",
     "install-peers-cli": "^2.2.0",
-    "rollup": "^2.76.0",
+    "rollup": "^2.77.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-typescript2": "^0.32.1",
     "typescript": "^4.7.4"
