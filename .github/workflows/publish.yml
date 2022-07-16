@@ -11,9 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Exit if not on main branch
-        if: ${{ github.ref != 'refs/heads/main' }}
-        run: exit -1
+      # - name: Exit if not on main branch
+      #   if: ${{ github.ref != 'refs/heads/main' }}
+      #   run: exit -1
 
       - name: Setup NPM registry
         uses: actions/setup-node@v2
