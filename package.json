@@ -24,6 +24,9 @@
     "build": "rollup -c",
     "prepare": "install-peers"
   },
+  "workspaces": [
+    "examples/advanced-boilerplate"
+  ],
   "peerDependencies": {
     "history": "^5",
     "react": "^16.8 || ^17 || ^18",

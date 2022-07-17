@@ -1,0 +1,7 @@
+.page.page-sign-in input {
+  display: block;
+}
+
+.page .page-sign-in__error-message {
+  color: red;
+}
