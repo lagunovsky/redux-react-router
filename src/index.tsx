@@ -40,14 +40,15 @@ export type UpdateLocationAction<M extends Methods = Methods> = {
   type: typeof ROUTER_CALL_HISTORY_METHOD
   payload: {
     method: M
-    args: Parameters<History[M]>,
+    args: Parameters<History[M]>
+    asEffect: boolean
   }
 }
 
-function updateLocation<M extends Methods = Methods>(method: M) {
+function updateLocation<M extends Methods = Methods>(method: M, asEffect = true) {
   return (...args: Parameters<History[M]>): UpdateLocationAction<M> => ({
     type: ROUTER_CALL_HISTORY_METHOD,
-    payload: { method: method, args },
+    payload: { method, args, asEffect },
   })
 }
 
@@ -60,6 +61,7 @@ function updateLocation<M extends Methods = Methods>(method: M) {
  * @param state - Data to associate with the new location
  */
 export const push = updateLocation('push')
+export const pushStraight = updateLocation('push', false)
 
 /**
  * Replaces the current location in the history stack with a new one.  The
@@ -69,21 +71,25 @@ export const push = updateLocation('push')
  * @param state - Data to associate with the new location
  */
 export const replace = updateLocation('replace')
+export const replaceStraight = updateLocation('replace', false)
 
 /**
  * Navigates to the next entry in the stack. Identical to go(1).
  */
 export const go = updateLocation('go')
+export const goStraight = updateLocation('go', false)
 
 /**
  * Goes back one entry in the history stack. Identical to go(-1).
  */
 export const back = updateLocation('back')
+export const backStraight = updateLocation('back', false)
 
 /**
  * Navigates to the next entry in the stack. Identical to go(1).
  */
 export const forward = updateLocation('forward')
+export const forwardStraight = updateLocation('forward', false)
 
 export const routerActions = {
   push,
@@ -103,10 +109,13 @@ export function createRouterMiddleware(history: History): Middleware {
     if (action.type !== ROUTER_CALL_HISTORY_METHOD) {
       return next(action)
     }
-    history[action.payload.method](...action.payload.args)
+    if (action.payload.asEffect) {
+      queueMicrotask(() => history[action.payload.method](...action.payload.args))
+    } else {
+      history[action.payload.method](...action.payload.args)
+    }
   }
 }
-
 
 // Reducer
 
