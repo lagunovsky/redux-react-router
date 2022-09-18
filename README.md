@@ -40,9 +40,54 @@ Or
 Usage
 -----
 
-See the [examples](https://github.com/lagunovsky/redux-react-router/tree/master/examples) folder
+```typescript jsx
+import { configureStore } from '@lagunovsky/redux-react-router'
+import { configureStore } from '@reduxjs/toolkit'
+import { createBrowserHistory } from 'history'
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { Provider, useDispatch } from 'react-redux'
+import { Route, Routes } from 'react-router'
+import { NavLink } from 'react-router-dom'
 
-Note: the `history` object provided to `router` reducer, `routerMiddleware`, and `ReduxRouter` component must be the same `history` object.
+const history = createBrowserHistory()
+const routerMiddleware = createRouterMiddleware(history)
+
+const store = configureStore({
+  reducer: createRouterReducerMapObject(history),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().prepend(routerMiddleware),
+})
+
+function Content() {
+  const dispatch = useDispatch()
+  
+  const onClickHandler = () => {
+    const action = push(Date.now().toString())
+    dispatch(action)
+  }
+  
+  return (
+    <>
+      <NavLink to={'/'} children={'Home'}/>
+      <button type={'button'} onClick={onClickHandler} children={'Rand'}/>
+    </>
+  )
+}
+
+function App() {
+  return (
+    <Provider store={store}>
+      <ReduxRouter history={history}>
+        <Routes>
+          <Route path={'*'} element={<Content/>}/>
+        </Routes>
+      </ReduxRouter>
+    </Provider>
+  )
+}
+```
+
+Note: the `history` object provided to reducer, middleware, and component must be the same `history` object.
 
 
 Migrate from Connected React Router
