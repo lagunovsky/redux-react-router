@@ -2,7 +2,7 @@ import { Action, History, Location } from 'history'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Router } from 'react-router'
-import { Middleware, Reducer } from 'redux'
+import { AnyAction, Middleware, Reducer } from 'redux'
 
 
 // Actions
@@ -36,7 +36,7 @@ export const onLocationChanged = (location: Location, action: Action): LocationC
  */
 export const ROUTER_CALL_HISTORY_METHOD = '@@router/CALL_HISTORY_METHOD'
 
-export type UpdateLocationAction<M extends Methods = Methods> = {
+type UpdateLocationAction<M extends Methods> = {
   type: typeof ROUTER_CALL_HISTORY_METHOD
   payload: {
     method: M
@@ -45,7 +45,7 @@ export type UpdateLocationAction<M extends Methods = Methods> = {
   }
 }
 
-function updateLocation<M extends Methods = Methods>(method: M, asEffect = true) {
+function updateLocation<M extends Methods>(method: M, asEffect = true) {
   return (...args: Parameters<History[M]>): UpdateLocationAction<M> => ({
     type: ROUTER_CALL_HISTORY_METHOD,
     payload: { method, args, asEffect },
@@ -99,32 +99,38 @@ export const routerActions = {
   forward,
 }
 
-export type RouterActions = LocationChangeAction | UpdateLocationAction
+export type UpdateLocationActions = ReturnType<typeof push & typeof replace & typeof go & typeof back & typeof forward>
 
+
+export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 // Middleware
 
 export function createRouterMiddleware(history: History): Middleware {
-  return () => next => (action: ReturnType<typeof push & typeof replace & typeof go & typeof back & typeof forward>) => {
-    if (action.type !== ROUTER_CALL_HISTORY_METHOD) {
-      return next(action)
-    }
-    if (action.payload.asEffect) {
-      queueMicrotask(() => history[action.payload.method](...action.payload.args))
+  return () => next => (action: UpdateLocationActions & AnyAction) => {
+    if (action.type === ROUTER_CALL_HISTORY_METHOD) {
+      if (action.payload.asEffect === true) {
+        queueMicrotask(() => history[action.payload.method](...action.payload.args))
+      } else {
+        history[action.payload.method](...action.payload.args)
+      }
     } else {
-      history[action.payload.method](...action.payload.args)
+      return next(action)
     }
   }
 }
 
+
 // Reducer
+
+export const ROUTER_REDUCER_MAP_KEY = 'router'
 
 export type ReduxRouterState = {
   location: Location
   action: Action
 }
 
-export function createRouterReducer(history: History): Reducer<ReduxRouterState, RouterActions> {
+export function createRouterReducer(history: History): Reducer<ReduxRouterState> {
   const initialRouterState: ReduxRouterState = {
     location: history.location,
     action: history.action,
@@ -134,21 +140,23 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState,
   * This reducer will update the state with the most recent location history
   * has transitioned to.
   */
-  return (state = initialRouterState, action: RouterActions) => {
-    if (action.type === ROUTER_ON_LOCATION_CHANGED) {
-      return action.payload
-    }
+  return (state = initialRouterState, action: LocationChangeAction | AnyAction) => {
+    return action.type === ROUTER_ON_LOCATION_CHANGED ? action.payload : state
+  }
+}
 
-    return state
+export function createRouterReducerMapObject(history: History) {
+  return {
+    [ROUTER_REDUCER_MAP_KEY]: createRouterReducer(history),
   }
 }
 
 export type ReduxRouterSelector<T = any> = (state: T) => ReduxRouterState
 
-export type ReduxRouterStoreState = { router: ReduxRouterState }
+export type ReduxRouterStoreState = { [ROUTER_REDUCER_MAP_KEY]: ReduxRouterState }
 
 export function reduxRouterSelector<T extends ReduxRouterStoreState = ReduxRouterStoreState>(state: T): ReduxRouterState {
-  return state.router
+  return state[ROUTER_REDUCER_MAP_KEY]
 }
 
 
