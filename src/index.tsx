@@ -157,7 +157,7 @@ export function reduxRouterSelector<T extends ReduxRouterStoreState = ReduxRoute
 export type ReduxRouterProps = {
   history: History
   basename?: string
-  children: React.ReactNode
+  children?: React.ReactNode
   routerSelector?: ReduxRouterSelector
 }
 
@@ -167,18 +167,20 @@ export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: 
   const state = useSelector(routerSelector)
 
   useEffect(() => {
-    const listener = props.history.listen((nextState) => {
+    return props.history.listen((nextState) => {
       if (skipHistoryChange.current === true) {
         skipHistoryChange.current = false
         return
       }
       dispatch(onLocationChanged(nextState.location, nextState.action))
     })
+  }, [ props.history, dispatch ])
+
+  useEffect(() => {
     if (props.history.location !== state.location) {
       dispatch(onLocationChanged(props.history.location, props.history.action))
     }
-    return listener
-  }, [ props.history ])
+  }, [])
 
   useEffect(() => {
     if (skipHistoryChange.current === undefined) {
@@ -187,7 +189,7 @@ export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: 
       skipHistoryChange.current = true
       props.history.replace(state.location)
     }
-  }, [ state ])
+  }, [ state.location, props.history ])
 
   return (
     <Router
