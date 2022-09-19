@@ -41,7 +41,7 @@ Usage
 -----
 
 ```typescript jsx
-import { configureStore } from '@lagunovsky/redux-react-router'
+import { createRouterMiddleware, createRouterReducerMapObject, push, ReduxRouter } from '@lagunovsky/redux-react-router'
 import { configureStore } from '@reduxjs/toolkit'
 import { createBrowserHistory } from 'history'
 import React from 'react'
