@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.2.2](https://github.com/lagunovsky/redux-react-router/compare/v4.2.0...v4.2.2)
+
+* readme update
+
 ## [4.2.0](https://github.com/lagunovsky/redux-react-router/compare/v4.1.0...v4.2.0)
 
 ### Minor Changes
