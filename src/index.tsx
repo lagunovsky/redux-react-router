@@ -28,6 +28,9 @@ export const onLocationChanged = (location: Location, action: Action): LocationC
   payload: { location, action },
 })
 
+export function matchLocationChangeAction(action: AnyAction): action is LocationChangeAction {
+  return action.type === ROUTER_ON_LOCATION_CHANGED
+}
 
 /**
  * This action type will be dispatched by the history actions below.
@@ -50,6 +53,10 @@ function updateLocation<M extends Methods>(method: M, asEffect = true) {
     type: ROUTER_CALL_HISTORY_METHOD,
     payload: { method, args, asEffect },
   })
+}
+
+export function matchUpdateLocationActions(action: AnyAction): action is UpdateLocationActions {
+  return action.type === ROUTER_CALL_HISTORY_METHOD
 }
 
 /**
@@ -108,7 +115,7 @@ export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 export function createRouterMiddleware(history: History): Middleware {
   return () => next => (action: UpdateLocationActions & AnyAction) => {
-    if (action.type === ROUTER_CALL_HISTORY_METHOD) {
+    if (matchUpdateLocationActions(action)) {
       if (action.payload.asEffect === true) {
         queueMicrotask(() => history[action.payload.method](...action.payload.args))
       } else {
@@ -141,7 +148,7 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState>
   * has transitioned to.
   */
   return (state = initialRouterState, action: LocationChangeAction | AnyAction) => {
-    return action.type === ROUTER_ON_LOCATION_CHANGED ? action.payload : state
+    return matchLocationChangeAction(action) ? action.payload : state
   }
 }
 
