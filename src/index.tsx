@@ -1,4 +1,4 @@
-import { Action, History, Location } from 'history'
+import { Action, History, Location, To } from 'history'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Router } from 'react-router'
@@ -106,24 +106,47 @@ export const routerActions = {
   forward,
 }
 
-export type UpdateLocationActions = ReturnType<typeof push & typeof replace & typeof go & typeof back & typeof forward>
-
+export type UpdateLocationActions =
+  | ReturnType<typeof push>
+  | ReturnType<typeof replace>
+  | ReturnType<typeof go>
+  | ReturnType<typeof back>
+  | ReturnType<typeof forward>
 
 export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 // Middleware
 
 export function createRouterMiddleware(history: History): Middleware {
-  return () => next => (action: UpdateLocationActions & AnyAction) => {
-    if (matchUpdateLocationActions(action)) {
-      if (action.payload.asEffect === true) {
-        queueMicrotask(() => history[action.payload.method](...action.payload.args))
-      } else {
-        history[action.payload.method](...action.payload.args)
-      }
-    } else {
+  return () => next => (action: UpdateLocationActions | AnyAction) => {
+    if (!matchUpdateLocationActions(action)) {
       return next(action)
     }
+
+    const callHistoryMethod = () => {
+      // Typescript is not able to narrow the arguments types correctly, so we need to handle
+      // each argument constellation seperately
+      switch(action.payload.method) {
+        case 'back':
+        case 'forward':
+          history[action.payload.method]()
+          break
+        case 'go':
+          history[action.payload.method](...action.payload.args as [number])
+          break
+        case 'push':
+        case 'replace':
+          history[action.payload.method](...action.payload.args as [To, any])
+          break
+      }
+    }
+
+    if (action.payload.asEffect) {
+      queueMicrotask(callHistoryMethod)
+      return
+    }
+
+    callHistoryMethod()
   }
 }
 
