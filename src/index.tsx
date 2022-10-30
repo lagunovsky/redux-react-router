@@ -28,6 +28,9 @@ export const onLocationChanged = (location: Location, action: Action): LocationC
   payload: { location, action },
 })
 
+export function matchLocationChangeAction(action: AnyAction): action is LocationChangeAction {
+  return action.type === ROUTER_ON_LOCATION_CHANGED
+}
 
 /**
  * This action type will be dispatched by the history actions below.
@@ -50,6 +53,10 @@ function updateLocation<M extends Methods>(method: M, asEffect = true) {
     type: ROUTER_CALL_HISTORY_METHOD,
     payload: { method, args, asEffect },
   })
+}
+
+export function matchUpdateLocationActions(action: AnyAction): action is UpdateLocationActions {
+  return action.type === ROUTER_CALL_HISTORY_METHOD
 }
 
 /**
@@ -99,24 +106,49 @@ export const routerActions = {
   forward,
 }
 
-export type UpdateLocationActions = ReturnType<typeof push & typeof replace & typeof go & typeof back & typeof forward>
-
+export type UpdateLocationActions =
+  | ReturnType<typeof push>
+  | ReturnType<typeof replace>
+  | ReturnType<typeof go>
+  | ReturnType<typeof back>
+  | ReturnType<typeof forward>
 
 export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 // Middleware
 
 export function createRouterMiddleware(history: History): Middleware {
-  return () => next => (action: UpdateLocationActions & AnyAction) => {
-    if (action.type === ROUTER_CALL_HISTORY_METHOD) {
-      if (action.payload.asEffect === true) {
-        queueMicrotask(() => history[action.payload.method](...action.payload.args))
-      } else {
-        history[action.payload.method](...action.payload.args)
-      }
-    } else {
+  return () => next => (action) => {
+    if (!matchUpdateLocationActions(action)) {
       return next(action)
     }
+
+    const callHistoryMethod = () => {
+      // Typescript is not able to narrow the arguments types correctly, so we need to handle
+      // each argument constellation seperately
+      switch(action.payload.method) {
+        case 'back':
+        case 'forward':
+          history[action.payload.method]()
+          break
+        case 'go':
+          history[action.payload.method](...action.payload.args)
+          break
+        case 'push':
+          history[action.payload.method](...action.payload.args)
+          break
+        case 'replace':
+          history[action.payload.method](...action.payload.args)
+          break
+      }
+    }
+
+    if (action.payload.asEffect === true) {
+      queueMicrotask(callHistoryMethod)
+      return
+    }
+
+    callHistoryMethod()
   }
 }
 
@@ -141,7 +173,7 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState>
   * has transitioned to.
   */
   return (state = initialRouterState, action: LocationChangeAction | AnyAction) => {
-    return action.type === ROUTER_ON_LOCATION_CHANGED ? action.payload : state
+    return matchLocationChangeAction(action) === true ? action.payload : state
   }
 }
 
