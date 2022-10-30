@@ -1,4 +1,4 @@
-import { Action, History, Location, To } from 'history'
+import { Action, History, Location } from 'history'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Router } from 'react-router'
@@ -118,7 +118,7 @@ export type RouterActions = LocationChangeAction | UpdateLocationActions
 // Middleware
 
 export function createRouterMiddleware(history: History): Middleware {
-  return () => next => (action: UpdateLocationActions | AnyAction) => {
+  return () => next => (action) => {
     if (!matchUpdateLocationActions(action)) {
       return next(action)
     }
@@ -132,11 +132,13 @@ export function createRouterMiddleware(history: History): Middleware {
           history[action.payload.method]()
           break
         case 'go':
-          history[action.payload.method](...action.payload.args as [number])
+          history[action.payload.method](...action.payload.args)
           break
         case 'push':
+          history[action.payload.method](...action.payload.args)
+          break
         case 'replace':
-          history[action.payload.method](...action.payload.args as [To, any])
+          history[action.payload.method](...action.payload.args)
           break
       }
     }
