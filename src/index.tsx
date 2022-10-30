@@ -143,7 +143,7 @@ export function createRouterMiddleware(history: History): Middleware {
       }
     }
 
-    if (action.payload.asEffect) {
+    if (action.payload.asEffect === true) {
       queueMicrotask(callHistoryMethod)
       return
     }
@@ -173,7 +173,7 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState>
   * has transitioned to.
   */
   return (state = initialRouterState, action: LocationChangeAction | AnyAction) => {
-    return matchLocationChangeAction(action) ? action.payload : state
+    return matchLocationChangeAction(action) === true ? action.payload : state
   }
 }
 
