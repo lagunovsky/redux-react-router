@@ -2,7 +2,7 @@ import { Action, History, Location } from 'history'
 import React, { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Router } from 'react-router'
-import { AnyAction, Middleware, Reducer } from 'redux'
+import { Middleware, Reducer, UnknownAction } from 'redux'
 
 
 // Actions
@@ -28,7 +28,7 @@ export const onLocationChanged = (location: Location, action: Action): LocationC
   payload: { location, action },
 })
 
-export function matchLocationChangeAction(action: AnyAction): action is LocationChangeAction {
+export function matchLocationChangeAction(action: UnknownAction): action is LocationChangeAction {
   return action.type === ROUTER_ON_LOCATION_CHANGED
 }
 
@@ -55,7 +55,7 @@ function updateLocation<M extends Methods>(method: M, asEffect = true) {
   })
 }
 
-export function matchUpdateLocationActions(action: AnyAction): action is UpdateLocationActions {
+export function matchUpdateLocationActions(action: UnknownAction): action is UpdateLocationActions {
   return action.type === ROUTER_CALL_HISTORY_METHOD
 }
 
@@ -119,31 +119,34 @@ export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 export function createRouterMiddleware(history: History): Middleware {
   return () => next => (action) => {
-    if (!matchUpdateLocationActions(action)) {
+    if (!matchUpdateLocationActions(action as UnknownAction)) {
       return next(action)
     }
 
+    const updateLocationAction = action as UpdateLocationActions;
+    const { method, args } = updateLocationAction.payload;
+
     const callHistoryMethod = () => {
       // Typescript is not able to narrow the arguments types correctly, so we need to handle
-      // each argument constellation seperately
-      switch(action.payload.method) {
+      // each argument constellation separately
+      switch(method) {
         case 'back':
         case 'forward':
-          history[action.payload.method]()
+          history.forward()
           break
         case 'go':
-          history[action.payload.method](...action.payload.args)
+          history[method](...args)
           break
         case 'push':
-          history[action.payload.method](...action.payload.args)
+          history[method](...args)
           break
         case 'replace':
-          history[action.payload.method](...action.payload.args)
+          history[method](...args)
           break
       }
     }
 
-    if (action.payload.asEffect === true) {
+    if (updateLocationAction.payload.asEffect === true) {
       queueMicrotask(callHistoryMethod)
       return
     }
@@ -172,8 +175,8 @@ export function createRouterReducer(history: History): Reducer<ReduxRouterState>
   * This reducer will update the state with the most recent location history
   * has transitioned to.
   */
-  return (state = initialRouterState, action: LocationChangeAction | AnyAction) => {
-    return matchLocationChangeAction(action) === true ? action.payload : state
+  return (state = initialRouterState, action: LocationChangeAction | UnknownAction) => {
+    return matchLocationChangeAction(action) === true ? action.payload as ReduxRouterState : state
   }
 }
 
