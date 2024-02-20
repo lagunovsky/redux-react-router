@@ -131,6 +131,8 @@ export function createRouterMiddleware(history: History): Middleware {
       // each argument constellation separately
       switch(method) {
         case 'back':
+          history.back()
+          break
         case 'forward':
           history.forward()
           break
