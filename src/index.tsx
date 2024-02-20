@@ -123,8 +123,8 @@ export function createRouterMiddleware(history: History): Middleware {
       return next(action)
     }
 
-    const updateLocationAction = action as UpdateLocationActions;
-    const { method, args } = updateLocationAction.payload;
+    const updateLocationAction = action as UpdateLocationActions
+    const { method, args } = updateLocationAction.payload
 
     const callHistoryMethod = () => {
       // Typescript is not able to narrow the arguments types correctly, so we need to handle
