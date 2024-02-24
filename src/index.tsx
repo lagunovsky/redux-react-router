@@ -206,7 +206,7 @@ export type ReduxRouterProps = {
   routerSelector?: ReduxRouterSelector
 }
 
-export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
+export function ReduxRouter({ routerSelector = reduxRouterSelector, component = Router, ...props }: ReduxRouterProps) {
   const dispatch = useDispatch()
   const skipHistoryChange = useRef<boolean>()
   const state = useSelector(routerSelector)
@@ -235,9 +235,10 @@ export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: 
       props.history.replace(state.location)
     }
   }, [ state.location, props.history ])
-
+  const RouterComponent = props.component;
+  
   return (
-    <Router
+    <RouterComponent
       navigationType={state.action}
       location={state.location}
       basename={props.basename}
