@@ -208,7 +208,7 @@ export type ReduxRouterProps = {
 
 export function ReduxRouter({ routerSelector = reduxRouterSelector, ...props }: ReduxRouterProps) {
   const dispatch = useDispatch()
-  const skipHistoryChange = useRef<boolean>()
+  const skipHistoryChange = useRef<boolean>(undefined)
   const state = useSelector(routerSelector)
 
   useEffect(() => {
