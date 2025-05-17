@@ -17,10 +17,10 @@ A Redux binding for React Router
 ## Main features
 
 - Synchronize router state with redux store through uni-directional flow (i.e. history -> store -> router -> components).
-- Supports [React Router v6](https://github.com/ReactTraining/react-router/tree/dev) and [History v5](https://github.com/ReactTraining/history)
+- Supports [React Router v7](https://github.com/remix-run/react-router/tree/main) and [History v5](https://github.com/remix-run/history)
 - Supports functional component hot reloading while preserving state.
-- Dispatching of history methods (`push`, `replace`, `go`, `back`, `forward`) works for both [redux-thunk](https://github.com/gaearon/redux-thunk)
-  and [redux-saga](https://github.com/yelouafi/redux-saga).
+- Dispatching of history methods (`push`, `replace`, `go`, `back`, `forward`) works for both [redux-thunk](https://github.com/reduxjs/redux-thunk)
+  and [redux-saga](https://github.com/redux-saga/redux-saga).
 - Nested children can access routing state such as the current location directly with `react-redux`'s `connect`.
 - Supports time traveling in Redux DevTools.
 - TypeScript
