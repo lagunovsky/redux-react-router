@@ -117,7 +117,17 @@ export type RouterActions = LocationChangeAction | UpdateLocationActions
 
 // Middleware
 
-export function createRouterMiddleware(history: History): Middleware {
+export type RouterMiddlewareOptions = {
+  /**
+   * When true, the middleware will call `next()` for handled actions (default: false)
+   */
+  hasNextCall: boolean
+}
+
+export function createRouterMiddleware(
+  history: History,
+  { hasNextCall = false }: Partial<RouterMiddlewareOptions> = {}
+): Middleware {
   return () => next => (action) => {
     if (!matchUpdateLocationActions(action as UnknownAction)) {
       return next(action)
@@ -148,12 +158,15 @@ export function createRouterMiddleware(history: History): Middleware {
       }
     }
 
-    if (updateLocationAction.payload.asEffect === true) {
+    if (updateLocationAction.payload.asEffect) {
       queueMicrotask(callHistoryMethod)
-      return
+    } else {
+      callHistoryMethod()
     }
 
-    callHistoryMethod()
+    if (hasNextCall) {
+      next(action)
+    }
   }
 }
 

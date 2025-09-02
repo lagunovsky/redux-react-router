@@ -1,5 +1,9 @@
 # Changelog
 
+## [4.5.0](https://github.com/lagunovsky/redux-react-router/compare/v4.4.1...v4.5.0)
+
+* added support for optionally enabling the middleware to call `next()` for handled actions
+
 ## [4.2.2](https://github.com/lagunovsky/redux-react-router/compare/v4.2.0...v4.2.2)
 
 * readme update
