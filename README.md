@@ -155,10 +155,12 @@ const ROUTER_CALL_HISTORY_METHOD = '@@router/CALL_HISTORY_METHOD'
 const ROUTER_ON_LOCATION_CHANGED = '@@router/ON_LOCATION_CHANGED'
 ```
 
-#### `createRouterMiddleware(history: History) => Middleware`
+#### `createRouterMiddleware(history: History, options?: RouterMiddlewareOptions) => Middleware`
 
 A middleware you can apply to your Redux store to capture dispatched actions created by the action creators. 
 It will redirect those actions to the provided history instance.
+
+If you need the middleware to pass the action on after being handled, you can provide the `hasNextCall` option as `true`.
 
 #### `createRouterReducerMapObject(history: History) => {router: Reducer<ReduxRouterState>}`
 
