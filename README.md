@@ -1,5 +1,5 @@
 ![License](https://img.shields.io/github/license/lagunovsky/redux-react-router)
-![TypeScript](https://img.shields.io/badge/typescript-%3E%3D4.0.0-blue)
+![TypeScript](https://img.shields.io/badge/typescript-%3E%3D5.0.0-blue)
 ![Tests workflow](https://github.com/lagunovsky/redux-react-router/actions/workflows/publish.yml/badge.svg)
 
 Redux React Router
@@ -17,7 +17,7 @@ A Redux binding for React Router
 ## Main features
 
 - Synchronize router state with redux store through uni-directional flow (i.e. history -> store -> router -> components).
-- Supports [React Router v7](https://github.com/remix-run/react-router/tree/main) and [History v5](https://github.com/remix-run/history)
+- Supports [React Router v6, v7 and v8](https://github.com/remix-run/react-router/tree/main) and [History v5](https://github.com/remix-run/history)
 - Supports functional component hot reloading while preserving state.
 - Dispatching of history methods (`push`, `replace`, `go`, `back`, `forward`) works for both [redux-thunk](https://github.com/reduxjs/redux-thunk)
   and [redux-saga](https://github.com/redux-saga/redux-saga).
@@ -43,6 +43,8 @@ yarn add @lagunovsky/redux-react-router
 
 Note: the `history` object provided to reducer, middleware, and component must be the same `history` object.
 
+Note: the examples below import `NavLink` from `react-router`, which is correct for v7 and v8. On React Router v6 the DOM components live in `react-router-dom`.
+
 #### `@reduxjs/toolkit`
 
 ```typescript jsx
@@ -52,8 +54,7 @@ import { createBrowserHistory } from 'history'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider, useDispatch } from 'react-redux'
-import { Route, Routes } from 'react-router'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Route, Routes } from 'react-router'
 
 const history = createBrowserHistory()
 const routerMiddleware = createRouterMiddleware(history)
@@ -100,8 +101,7 @@ import { createBrowserHistory } from 'history'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider, useDispatch } from 'react-redux'
-import { Route, Routes } from 'react-router'
-import { NavLink } from 'react-router-dom'
+import { NavLink, Route, Routes } from 'react-router'
 import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
 
 const history = createBrowserHistory()
