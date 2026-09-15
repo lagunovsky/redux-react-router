@@ -1,6 +1,6 @@
 {
   "name": "@lagunovsky/redux-react-router",
-  "version": "4.5.0",
+  "version": "4.6.0",
   "description": "A Redux binding for React Router v6, v7 and v8",
   "author": "Ivan Lagunovsky",
   "license": "MIT",
